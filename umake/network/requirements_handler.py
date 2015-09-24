@@ -199,9 +199,12 @@ class RequirementsHandler(object, metaclass=Singleton):
         result = self.RequirementsResult(bucket=future.tag_bucket["bucket"], error=None)
         if future.exception():
             error_message = str(future.exception())
+            print("Error message when installing requirement here: " + error_message)
             with suppress(FileNotFoundError):
                 with open(self.apt_fd.name) as f:
+                    print("apt file: " + self.apt_fd.name)
                     subprocess_content = f.read()
+                    print("Error from apt: " + subprocess_content)
                     if subprocess_content:
                         error_message = "{}\nSubprocess output: {}".format(error_message, subprocess_content)
             logger.error(error_message)
