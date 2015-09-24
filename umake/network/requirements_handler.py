@@ -131,15 +131,19 @@ class RequirementsHandler(object, metaclass=Singleton):
         """Really install current bucket and bind signals"""
         bucket = current_bucket["bucket"]
         logger.debug("Starting {} installation".format(bucket))
+        print("Starting {} installation".format(bucket))
 
         # exchange file output for apt and dpkg after the fork() call (open it empty)
         self.apt_fd = tempfile.NamedTemporaryFile(delete=False)
         self.apt_fd.close()
+        print("After apt fd")
 
         if self.is_bucket_uptodate(bucket):
             return True
+        print("After bucked up to date false")
 
         for pkg_name in bucket:
+            print("in pkg_name:" + pkg_name)
             if ":" in pkg_name:
                 arch = pkg_name.split(":", -1)[-1]
                 # try to add the arch
@@ -152,13 +156,17 @@ class RequirementsHandler(object, metaclass=Singleton):
                             if subprocess.call(["dpkg", "--add-architecture", arch], stdout=f) != 0:
                                 msg = "Can't add foreign foreign architecture {}".format(arch)
                                 raise BaseException(msg)
+                            print("Before cache update")
                             self.cache.update()
                         finally:
                             switch_to_current_user()
+                        print("Before force cache update")
                         self._force_reload_apt_cache()
+        print("After multiarch")
 
         # mark for install and so on
         for pkg_name in bucket:
+            print("Mark install for " + pkg_name)
             # /!\ danger: if current arch == ':appended_arch', on a non multiarch system, dpkg doesn't understand that
             # strip :arch then
             if ":" in pkg_name:
@@ -169,18 +177,23 @@ class RequirementsHandler(object, metaclass=Singleton):
                 pkg = self.cache[pkg_name]
                 if pkg.is_installed and pkg.is_upgradable:
                     logger.debug("Marking {} for upgrade".format(pkg_name))
+                    print("Marking {} for upgrade".format(pkg_name))
                     pkg.mark_upgrade()
                 else:
                     logger.debug("Marking {} for install".format(pkg_name))
+                    print("Marking {} for install".format(pkg_name))
                     pkg.mark_install(auto_fix=False)
+                print("After marking")
             except Exception as msg:
                 message = "Can't mark for install {}: {}".format(pkg_name, msg)
                 raise BaseException(message)
 
         # this can raise on installedArchives() exception if the commit() fails
         try:
+            print("before setuid")
             os.seteuid(0)
             os.setegid(0)
+            print("after setuid")
             self.cache.commit(fetch_progress=self._FetchProgress(current_bucket,
                                                                  self.STATUS_DOWNLOADING,
                                                                  current_bucket["progress_callback"]),
@@ -189,8 +202,10 @@ class RequirementsHandler(object, metaclass=Singleton):
                                                                      current_bucket["progress_callback"],
                                                                      self._force_reload_apt_cache,
                                                                      self.apt_fd.name))
+            print("after commit")
         finally:
             switch_to_current_user()
+            print("after switch to current user")
 
         return True
 
