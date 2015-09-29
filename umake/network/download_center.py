@@ -126,7 +126,7 @@ class DownloadCenter:
         session = requests.Session()
         session.mount('ftp://', FTPAdapter())
         try:
-            with closing(session.get(url, stream=True, headers=headers, cookies=cookies)) as r:
+            with closing(session.get(url, stream=True, headers=headers, cookies=cookies, verify=True)) as r:
                 r.raise_for_status()
                 content_size = int(r.headers.get('content-length', -1))
 
