@@ -19,6 +19,7 @@
 
 # setup dbus environment and launch a command, pwd being the umake dir.
 # Start command in async mode
+LC_ALL=C
 cd $1
 shift
 [[ $(env | grep VIRTUAL_ENV) == *env ]] && . env/bin/activate
