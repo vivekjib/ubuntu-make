@@ -13,4 +13,4 @@ install: "" # we don't want to use virtualenv (see below)
 # instead for both uncompiled and compiled modules.
 # The easiest way without hacking PYTHONPATH, PYTHONHOME is to use the system
 # python version by prepending it in the PATH.
-script: PATH="/usr/bin:$PATH" ./runtests pep8 small
+script: PATH="/usr/bin:$PATH" ./runtests pep8 small medium
