@@ -311,7 +311,7 @@ class WebStorm(BaseJetBrains):
 
     def __init__(self, category):
         super().__init__(name="WebStorm",
-                         description=_("WebStorm"),
+                         description=_("Complex client-side and server-side javascript IDE"),
                          category=category,
                          only_on_archs=['i386', 'amd64'],
                          download_page=self.download_page_url,
@@ -328,7 +328,7 @@ class PhpStorm(BaseJetBrains):
 
     def __init__(self, category):
         super().__init__(name="PhpStorm",
-                         description=_("PhpStorm"),
+                         description=_("PHP and web development IDE"),
                          category=category,
                          only_on_archs=['i386', 'amd64'],
                          download_page=self.download_page_url,
@@ -336,6 +336,23 @@ class PhpStorm(BaseJetBrains):
                          desktop_filename='jetbrains-phpstorm.desktop',
                          packages_requirements=['openjdk-7-jdk', 'jayatana'],
                          icon_filename='webide.png')
+
+
+class CLion(BaseJetBrains):
+    """The JetBrains CLion IDE"""
+    download_page_url = "https://www.jetbrains.com/clion/download/download_thanks.jsp?os=linux"
+    executable = "clion.sh"
+
+    def __init__(self, category):
+        super().__init__(name="CLion",
+                         description=_("CLion integrated C/C++ IDE"),
+                         category=category,
+                         only_on_archs=['i386', 'amd64'],
+                         download_page=self.download_page_url,
+                         dir_to_decompress_in_tarball='clion-*',
+                         desktop_filename='jetbrains-clion.desktop',
+                         packages_requirements=['openjdk-7-jdk', 'jayatana'],
+                         icon_filename='clion.svg')
 
 
 class Arduino(umake.frameworks.baseinstaller.BaseInstaller):
