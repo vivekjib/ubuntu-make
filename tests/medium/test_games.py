@@ -46,7 +46,7 @@ class Unity3DInContainer(ContainerTests, test_games.Unity3DTests):
     TIMEOUT_STOP = 10
 
     def setUp(self):
-        self.hosts = {80: ["forum.unity3d.com"]}
+        self.hosts = {443: ["forum.unity3d.com"], 80: ["beta.unity3d.com"]}
         self.apt_repo_override_path = os.path.join(self.APT_FAKE_REPO_PATH, 'unity3d')
         super().setUp()
         # override with container path
@@ -82,7 +82,7 @@ class SuperpowersInContainer(ContainerTests, test_games.SuperpowersTests):
     def test_install_with_changed_download_page(self):
         """Installing Superpowers should fail if download page has significantly changed"""
         download_page_file_path = os.path.join(get_data_dir(), "server-content", "api.github.com",
-                                               "repos", "superpowers", "superpowers-core", "releases", "latest")
+                                               "repos", "superpowers", "superpowers-app", "releases", "latest")
         umake_command = self.command('{} games superpowers'.format(UMAKE))
         self.bad_download_page_test(self.command(self.command_args), download_page_file_path)
         self.assertFalse(self.launcher_exists_and_is_pinned(self.desktop_filename))

@@ -21,6 +21,7 @@
 """Downloader abstract module"""
 
 from contextlib import suppress
+from gettext import gettext as _
 from io import StringIO
 import logging
 from progressbar import ProgressBar
@@ -41,6 +42,11 @@ logger = logging.getLogger(__name__)
 class BaseInstaller(umake.frameworks.BaseFramework):
 
     DIRECT_COPY_EXT = ['.svg', '.png', '.ico', '.jpg', '.jpeg']
+    # Framework environment variables are added to `~/.profile` which may
+    # require logging back into your session for the changes to be picked up.
+    # Use `RELOGIN_REQUIRE_MSG` to alert users to this fact, in `post_install`
+    # function. {} in replaced with the framework name at runtime.
+    RELOGIN_REQUIRE_MSG = _("You may need to log back in for your {} installation to work properly")
 
     def __new__(cls, *args, **kwargs):
         "This class is not meant to be instantiated, so __new__ returns None."
@@ -133,11 +139,12 @@ class BaseInstaller(umake.frameworks.BaseFramework):
         UI.delayed_display(DisplayMessage("Suppression done"))
         UI.return_main_screen()
 
-    def confirm_path(self, path_dir=""):
-        """Confirm path dir"""
-
+    def set_exec_path(self):
         if self.desktop_filename:
             self.exec_path = os.path.join(self.install_path, self.required_files_path[0])
+
+    def confirm_path(self, path_dir=""):
+        """Confirm path dir"""
 
         if not path_dir:
             logger.debug("No installation path provided. Requesting one.")
@@ -158,11 +165,13 @@ class BaseInstaller(umake.frameworks.BaseFramework):
                                      "there?".format(path_dir), self.set_installdir_to_clean, UI.return_main_screen))
                     return
         self.install_path = path_dir
+        self.set_exec_path()
         self.download_provider_page()
 
     def set_installdir_to_clean(self):
         logger.debug("Mark non empty new installation path for cleaning.")
         self._paths_to_clean.add(self.install_path)
+        self.set_exec_path()
         self.download_provider_page()
 
     def download_provider_page(self):

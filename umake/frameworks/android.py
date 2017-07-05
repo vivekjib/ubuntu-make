@@ -82,10 +82,9 @@ class AndroidStudio(umake.frameworks.baseinstaller.BaseInstaller):
         super().__init__(name="Android Studio", description=_("Android Studio (default)"), is_category_default=True,
                          category=category, only_on_archs=_supported_archs, expect_license=True,
                          packages_requirements=["openjdk-7-jdk | openjdk-8-jdk",
-                                                "libncurses5:i386", "libstdc++6:i386", "zlib1g:i386",
-                                                "jayatana"],
-                         download_page="https://developer.android.com/sdk/index.html",
-                         checksum_type=ChecksumType.sha1,
+                                                "libncurses5:i386", "libstdc++6:i386", "zlib1g:i386"],
+                         download_page="https://developer.android.com/studio/index.html",
+                         checksum_type=ChecksumType.sha256,
                          dir_to_decompress_in_tarball="android-studio",
                          desktop_filename="android-studio.desktop",
                          required_files_path=[os.path.join("bin", "studio.sh")])
@@ -105,7 +104,7 @@ class AndroidStudio(umake.frameworks.baseinstaller.BaseInstaller):
                         exec='"{}" %f'.format(os.path.join(self.install_path, "bin", "studio.sh")),
                         comment=_("Android Studio developer environment"),
                         categories="Development;IDE;",
-                        extra="StartupWMClass=jetbrains-android"))
+                        extra="StartupWMClass=jetbrains-studio"))
 
 
 class AndroidSDK(umake.frameworks.baseinstaller.BaseInstaller):
@@ -114,11 +113,10 @@ class AndroidSDK(umake.frameworks.baseinstaller.BaseInstaller):
         super().__init__(name="Android SDK", description=_("Android SDK"),
                          category=category, only_on_archs=_supported_archs, expect_license=True,
                          packages_requirements=["openjdk-7-jdk | openjdk-8-jdk",
-                                                "libncurses5:i386", "libstdc++6:i386", "zlib1g:i386",
-                                                "jayatana"],
-                         download_page="https://developer.android.com/sdk/index.html",
-                         checksum_type=ChecksumType.sha1,
-                         dir_to_decompress_in_tarball="android-sdk-linux",
+                                                "libncurses5:i386", "libstdc++6:i386", "zlib1g:i386"],
+                         download_page="https://developer.android.com/studio/index.html",
+                         checksum_type=ChecksumType.sha256,
+                         dir_to_decompress_in_tarball=".",
                          required_files_path=[os.path.join("tools", "android")])
 
     def parse_license(self, line, license_txt, in_license):
@@ -132,12 +130,16 @@ class AndroidSDK(umake.frameworks.baseinstaller.BaseInstaller):
     def post_install(self):
         """Add necessary environment variables"""
         add_env_to_user(self.name, {"ANDROID_HOME": {"value": self.install_path, "keep": False}})
+
+        # add a few fall-back variables that might be used by some tools
+        add_env_to_user(self.name, {"ANDROID_SDK": {"value": "$ANDROID_HOME", "keep": False}})
+        # do not set ANDROID_SDK_HOME here as that is the path of the preference folder expected by the Android tools
+
         # add "platform-tools" to PATH to ensure "adb" can be run once the platform tools are installed via
         # the SDK manager
         add_env_to_user(self.name, {"PATH": {"value": [os.path.join("$ANDROID_HOME", "tools"),
                                                        os.path.join("$ANDROID_HOME", "platform-tools")]}})
-        UI.delayed_display(DisplayMessage(_("You need to restart your current shell session for your {} installation "
-                                            "to work properly").format(self.name)))
+        UI.delayed_display(DisplayMessage(self.RELOGIN_REQUIRE_MSG.format(self.name)))
 
         # print wiki page message
         UI.delayed_display(DisplayMessage("SDK installed in {}. More information on how to use it on {}".format(
@@ -167,6 +169,10 @@ class AndroidNDK(umake.frameworks.baseinstaller.BaseInstaller):
     def post_install(self):
         """Add necessary environment variables"""
         add_env_to_user(self.name, {"NDK_ROOT": {"value": self.install_path, "keep": False}})
+
+        # add a few fall-back variables that might be used by some tools
+        add_env_to_user(self.name, {"ANDROID_NDK": {"value": "$NDK_ROOT", "keep": False}})
+        add_env_to_user(self.name, {"ANDROID_NDK_HOME": {"value": "$NDK_ROOT", "keep": False}})
 
         # print wiki page message
         UI.display(DisplayMessage("NDK installed in {}. More information on how to use it on {}".format(
